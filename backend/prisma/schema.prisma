@@ -1,0 +1,101 @@
+// Schema Prisma para CONTIA
+// Modelo de datos del MVP: usuarios, tramites, observaciones, auditoria
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TramiteTipo {
+  CERTIFICACION_INGRESOS
+  BALANCE_PERSONAL
+  IVA
+  PRESTACIONES_SOCIALES
+}
+
+enum TramiteEstado {
+  PENDIENTE
+  EN_REVISION
+  APROBADO
+  DEVUELTO
+}
+
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  password    String
+  nombre      String
+  cedula      String?
+  telefono    String?
+  role        Role       @default(USER)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tramites    Tramite[]  @relation("UserTramites")
+  revisados   Tramite[]  @relation("RevisorTramites")
+  observaciones Observacion[]
+}
+
+model Tramite {
+  id          String          @id @default(cuid())
+  tipo        TramiteTipo
+  estado      TramiteEstado   @default(PENDIENTE)
+
+  // datos del formulario (estructura libre por tipo)
+  datos       Json
+  // calculos automaticos (cuando aplica: IVA, prestaciones)
+  calculos    Json?
+  // texto generado por IA (resumen, explicaciones)
+  contenidoIA String?         @db.Text
+  // ruta o URL del PDF generado
+  pdfUrl      String?
+
+  user        User            @relation("UserTramites", fields: [userId], references: [id])
+  userId      String
+
+  revisor     User?           @relation("RevisorTramites", fields: [revisorId], references: [id])
+  revisorId   String?
+
+  observaciones Observacion[]
+  auditoria   AuditLog[]
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  reviewedAt  DateTime?
+
+  @@index([userId])
+  @@index([estado])
+  @@index([tipo])
+}
+
+model Observacion {
+  id        String   @id @default(cuid())
+  texto     String   @db.Text
+  tramite   Tramite  @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  tramiteId String
+  autor     User     @relation(fields: [autorId], references: [id])
+  autorId   String
+  createdAt DateTime @default(now())
+
+  @@index([tramiteId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tramite   Tramite  @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  tramiteId String
+  accion    String   // "creado", "en_revision", "aprobado", "devuelto", "reenviado"
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([tramiteId])
+}
