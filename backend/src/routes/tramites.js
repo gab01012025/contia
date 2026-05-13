@@ -5,7 +5,37 @@ const { authMiddleware } = require('../middlewares/auth');
 const { calcularIVA } = require('../modulos/iva/calculator');
 const { calcularPrestaciones } = require('../modulos/prestaciones/calculator');
 const { calcularBalance } = require('../modulos/certificacion/calculator');
+const { generarHtmlDocumento } = require('../modulos/certificacion/templates');
+const { htmlToPdfBuffer } = require('../pdf/generator');
+const { redactar } = require('../ai/openai');
 const { notificarAdminNuevoTramite } = require('../email/resend');
+
+// Genera un resumen breve del trámite para facilitar la revisión del admin
+async function generarResumenIA(tipo, datos, calculos) {
+  if (!process.env.OPENAI_API_KEY) return null;
+  try {
+    const esCert    = tipo === 'CERTIFICACION_INGRESOS';
+    const esBalance = tipo === 'BALANCE_PERSONAL';
+    if (!esCert && !esBalance) return null;
+
+    const montos = esCert
+      ? `Total ingresos: Bs. ${calculos?.totalIngresos ?? 0}. Flujo neto: Bs. ${calculos?.flujoMensual ?? 0}.`
+      : `Total activos: Bs. ${calculos?.totalActivos ?? 0}. Total pasivos: Bs. ${calculos?.totalPasivos ?? 0}. Patrimonio neto: Bs. ${calculos?.patrimonioNeto ?? 0}.`;
+
+    return await redactar({
+      system: 'Eres un asistente contable venezolano. Genera resúmenes breves y profesionales de trámites contables para revisión interna del contador. Responde solo con el resumen, sin encabezados ni listas.',
+      user: `Trámite: ${tipo === 'CERTIFICACION_INGRESOS' ? 'Certificación de Ingresos' : 'Balance Personal'}.
+Cliente: ${datos.nombreCliente}, C.I. ${datos.cedula}.
+Actividad: ${datos.actividad}.
+${montos}
+Institución destinataria: ${datos.nombreInstitucion}.
+Genera un párrafo breve de resumen para el contador revisor.`,
+      maxTokens: 300,
+    });
+  } catch {
+    return null;
+  }
+}
 
 router.use(authMiddleware);
 
@@ -59,11 +89,14 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: `Datos invalidos: ${e.message}` });
     }
 
+    const contenidoIA = await generarResumenIA(tipo, datos, calculos);
+
     const tramite = await prisma.tramite.create({
       data: {
         tipo,
         datos,
         calculos,
+        contenidoIA,
         userId: req.user.id,
       },
     });
@@ -76,6 +109,32 @@ router.post('/', async (req, res, next) => {
     notificarAdminNuevoTramite({ tramite, user }).catch(() => {});
 
     res.status(201).json({ tramite });
+  } catch (e) { next(e); }
+});
+
+// generar PDF de un tramite aprobado
+router.get('/:id/pdf', async (req, res, next) => {
+  try {
+    const tramite = await prisma.tramite.findFirst({
+      where: { id: req.params.id, userId: req.user.id },
+    });
+    if (!tramite) return res.status(404).json({ error: 'No encontrado' });
+    if (tramite.estado !== 'APROBADO') {
+      return res.status(403).json({ error: 'El trámite aún no ha sido aprobado' });
+    }
+    if (tramite.tipo !== 'CERTIFICACION_INGRESOS' && tramite.tipo !== 'BALANCE_PERSONAL') {
+      return res.status(400).json({ error: 'Tipo de documento sin plantilla PDF' });
+    }
+
+    const html   = generarHtmlDocumento(tramite.tipo, tramite.datos, tramite.calculos);
+    const buffer = await htmlToPdfBuffer(html);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="contia-${tramite.tipo.toLowerCase()}-${tramite.id}.pdf"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
   } catch (e) { next(e); }
 });
 
