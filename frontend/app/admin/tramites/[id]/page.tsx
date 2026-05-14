@@ -10,6 +10,33 @@ export default function TramiteDetallePage() {
   const [loading, setLoading] = useState(true);
   const [obs, setObs] = useState('');
   const [acting, setActing] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPdf() {
+    setPdfLoading(true);
+    try {
+      const token = localStorage.getItem('contia_token');
+      const base  = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const res   = await fetch(`${base}/api/admin/tramites/${params.id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(body || 'Error generando PDF');
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `contia-${tramite?.tipo?.toLowerCase() || 'documento'}-${params.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert(e.message || 'No se pudo generar el PDF.');
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   function load() {
     setLoading(true);
@@ -105,6 +132,29 @@ export default function TramiteDetallePage() {
             </button>
             <button onClick={devolver} disabled={acting} className="btn-danger">
               ↩ Devolver con observaciones
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Descargar PDF — disponible para Certificación e Ingresos y Balance Personal */}
+      {(tramite.tipo === 'CERTIFICACION_INGRESOS' || tramite.tipo === 'BALANCE_PERSONAL') && (
+        <div className="card bg-emerald-50 border-emerald-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-emerald-900">Documento PDF</h3>
+              <p className="text-sm text-emerald-700 mt-1">
+                {tramite.estado === 'APROBADO'
+                  ? 'Descarga el PDF oficial para firmar digitalmente y enviar al cliente.'
+                  : 'Vista previa del PDF con los datos actuales (sin firma).'}
+              </p>
+            </div>
+            <button
+              onClick={downloadPdf}
+              disabled={pdfLoading}
+              className="btn-primary bg-emerald-700 hover:bg-emerald-800"
+            >
+              {pdfLoading ? 'Generando…' : 'Descargar PDF'}
             </button>
           </div>
         </div>

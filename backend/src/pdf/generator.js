@@ -1,5 +1,5 @@
-// Generador de PDF basico (HTML -> PDF) usando puppeteer
-// En produccion se reemplaza por puppeteer-core + chromium en Render
+// Generador de PDF (HTML -> PDF) usando puppeteer
+// Soporta tanto desarrollo local (puppeteer bundled) como Render (chromium del sistema)
 
 let puppeteer = null;
 function getPup() {
@@ -9,9 +9,22 @@ function getPup() {
 
 async function htmlToPdfBuffer(html) {
   const pup = getPup();
+
+  // Detectar chromium del sistema (Render) o usar el bundled (local)
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+    || process.env.CHROMIUM_PATH
+    || undefined;
+
   const browser = await pup.launch({
     headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--single-process',
+    ],
   });
   try {
     const page = await browser.newPage();

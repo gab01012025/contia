@@ -5,7 +5,7 @@ services:
     plan: starter
     region: oregon
     rootDir: backend
-    buildCommand: npm install && npx prisma generate && npx prisma migrate deploy
+    buildCommand: apt-get update && apt-get install -y chromium && npm install && npx prisma generate && npx prisma migrate deploy
     startCommand: node src/index.js
     healthCheckPath: /api/health
     envVars:
@@ -27,3 +27,7 @@ services:
         value: mariaccarrizalesp@gmail.com
       - key: FRONTEND_URL
         sync: false
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"

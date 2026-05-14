@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { z } = require('zod');
 const prisma = require('../lib/prisma');
 const { authMiddleware, adminOnly } = require('../middlewares/auth');
+const { generarHtmlDocumento } = require('../modulos/certificacion/templates');
+const { htmlToPdfBuffer } = require('../pdf/generator');
 const { notificarUsuarioAprobado, notificarUsuarioDevuelto } = require('../email/resend');
 
 router.use(authMiddleware, adminOnly);
@@ -93,6 +95,29 @@ router.post('/tramites/:id/devolver', async (req, res, next) => {
     });
     notificarUsuarioDevuelto({ tramite, user: tramite.user, observacion }).catch(() => {});
     res.json({ tramite });
+  } catch (e) { next(e); }
+});
+
+// generar PDF de un tramite (para la contadora — disponible tras aprobar)
+router.get('/tramites/:id/pdf', async (req, res, next) => {
+  try {
+    const tramite = await prisma.tramite.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!tramite) return res.status(404).json({ error: 'No encontrado' });
+    if (tramite.tipo !== 'CERTIFICACION_INGRESOS' && tramite.tipo !== 'BALANCE_PERSONAL') {
+      return res.status(400).json({ error: 'Tipo de documento sin plantilla PDF' });
+    }
+
+    const html   = generarHtmlDocumento(tramite.tipo, tramite.datos, tramite.calculos);
+    const buffer = await htmlToPdfBuffer(html);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="contia-${tramite.tipo.toLowerCase()}-${tramite.id}.pdf"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
   } catch (e) { next(e); }
 });
 
