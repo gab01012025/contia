@@ -1,6 +1,15 @@
 // Templates HTML para generación de PDF — Módulo 1
 // Replicando fielmente los documentos oficiales de la Lcda. Mariali Carrizales
 
+const path = require('path');
+const fs   = require('fs');
+
+// Logo del Colegio de Contadores Públicos de Venezuela (embedded como base64)
+const logoPath    = path.join(__dirname, 'assets', 'logo-cpc-venezuela.png');
+const LOGO_CPC_B64 = fs.readFileSync(logoPath, 'base64');
+
+const LOGO_CPC_URI = `data:image/png;base64,${LOGO_CPC_B64}`;
+
 function fmtBs(n) {
   return Number(n || 0).toLocaleString('es-VE', {
     minimumFractionDigits: 2,
@@ -35,6 +44,11 @@ const BASE_CSS = `
   .header-logo {
     text-align: center;
     margin-bottom: 18pt;
+  }
+  .header-logo img.logo-cpc {
+    width: 60px;
+    height: auto;
+    margin-bottom: 6pt;
   }
   .header-logo .firma-nombre {
     font-size: 13pt;
@@ -167,6 +181,7 @@ function htmlCertificacionIngresos(datos, calculos) {
 <div class="page">
 
   <div class="header-logo">
+    <img class="logo-cpc" src="${LOGO_CPC_URI}" alt="Colegio de Contadores Públicos de Venezuela">
     <div class="firma-nombre">Lcda. Mariali C. Carrizales P.</div>
     <div class="firma-titulo">Contador Público Colegiado</div>
     <div class="firma-cpc">C.P.C. 90.419</div>
@@ -428,13 +443,19 @@ function htmlBalancePersonal(datos, calculos) {
   <meta charset="UTF-8">
   <title>Balance Personal — ${nombreCliente}</title>
   <style>${BASE_CSS}
+    .balance-table td, .balance-table th { text-align: left; }
     .balance-table td:last-child, .balance-table th:last-child { text-align: right; width: 160px; }
     .subtotal-row td { font-weight: bold; border-top: 1.5px solid #555; }
+    .subtotal-row td:first-child { text-align: left; }
+    .subtotal-row td:last-child { text-align: right; }
     .total-row td { font-weight: bold; background: #f0f0f0; border-top: 2px solid #000; }
+    .total-row td:first-child { text-align: left; }
+    .total-row td:last-child { text-align: right; }
     .section-header td {
       font-weight: bold;
       background: #e8e8e8;
       text-transform: uppercase;
+      text-align: left;
       font-size: 10pt;
       letter-spacing: 0.3px;
     }
@@ -448,6 +469,7 @@ function htmlBalancePersonal(datos, calculos) {
 <div class="page">
 
   <div class="header-logo">
+    <img class="logo-cpc" src="${LOGO_CPC_URI}" alt="Colegio de Contadores Públicos de Venezuela">
     <div class="firma-nombre">Lcda. Mariali Carrizales</div>
     <div class="firma-titulo">Contador Público Colegiado</div>
     <div class="firma-cpc">C.P.C. 90.49</div>
