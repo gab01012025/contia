@@ -37,7 +37,7 @@ const BASE_CSS = `
     background: #fff;
   }
   .page {
-    padding: 25mm 20mm 25mm 25mm;
+    padding: 10mm 20mm 15mm 25mm;
     max-width: 210mm;
     margin: 0 auto;
   }
@@ -107,6 +107,7 @@ const BASE_CSS = `
   }
   .firma-bloque {
     margin-top: 40pt;
+    page-break-inside: avoid;
   }
   .firma-linea {
     border-top: 1px solid #000;
@@ -334,7 +335,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     lícito ejercicio.
   </div>
 
-  <div style="margin-top: 30pt; text-align: center;">
+  <div style="margin-top: 30pt; text-align: center; page-break-inside: avoid;">
     <div style="margin-bottom: 30pt;">
       <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
         <strong>${nombreCliente}</strong><br>
@@ -451,11 +452,11 @@ function htmlBalancePersonal(datos, calculos) {
     .total-row td { font-weight: bold; background: #f0f0f0; border-top: 2px solid #000; }
     .total-row td:first-child { text-align: left; }
     .total-row td:last-child { text-align: right; }
-    .section-header td {
+    td.section-header {
       font-weight: bold;
       background: #e8e8e8;
       text-transform: uppercase;
-      text-align: left;
+      text-align: left !important;
       font-size: 10pt;
       letter-spacing: 0.3px;
     }
@@ -472,7 +473,7 @@ function htmlBalancePersonal(datos, calculos) {
     <img class="logo-cpc" src="${LOGO_CPC_URI}" alt="Colegio de Contadores Públicos de Venezuela">
     <div class="firma-nombre">Lcda. Mariali Carrizales</div>
     <div class="firma-titulo">Contador Público Colegiado</div>
-    <div class="firma-cpc">C.P.C. 90.49</div>
+    <div class="firma-cpc">C.P.C. 90.419</div>
   </div>
 
   <hr>
@@ -530,7 +531,7 @@ function htmlBalancePersonal(datos, calculos) {
     <div class="firma-linea"></div>
     <div class="firma-nombre-pie">Lcda. Mariali Carrizales</div>
     <div>Contador Público Colegiado</div>
-    <div>C.P.C. 90.49</div>
+    <div>C.P.C. 90.419</div>
   </div>
 
 </div>
@@ -742,7 +743,7 @@ function htmlBalancePersonal(datos, calculos) {
     <tfoot><tr class="subtotal-row"><td>TOTAL</td><td class="td-right">Bs. ${fmtBs(totalInversion)}</td></tr></tfoot>
   </table>` : ''}
 
-  <div style="margin-top: 40pt; text-align: center;">
+  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
     <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
       <strong>${nombreCliente}</strong><br>
       C.I. N° ${cedula}
