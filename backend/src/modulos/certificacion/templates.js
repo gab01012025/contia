@@ -106,7 +106,7 @@ const BASE_CSS = `
     background: #f5f5f5;
   }
   .firma-bloque {
-    margin-top: 40pt;
+    margin-top: 60pt;
     page-break-inside: avoid;
   }
   .firma-linea {
@@ -335,7 +335,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     lícito ejercicio.
   </div>
 
-  <div style="margin-top: 30pt; text-align: center; page-break-inside: avoid;">
+  <div style="margin-top: 60pt; text-align: center; page-break-inside: avoid;">
     <div style="margin-bottom: 30pt;">
       <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
         <strong>${nombreCliente}</strong><br>
@@ -355,9 +355,32 @@ function htmlCertificacionIngresos(datos, calculos) {
     <div class="note-titulo">NOTA 2: CUADRO DEMOSTRATIVO</div>
     <p class="indent">
       Cuadro demostrativo correspondiente a la actividad económica de
-      ${nombreCliente}, identificado/a con la cédula de identidad N° ${cedula}.
+      ${nombreCliente}, identificado/a con la cédula de identidad N° ${cedula},
+      actividad: ${actividad}.
       Período: ${periodoStr}.
     </p>
+    <table class="indent" style="margin-left: 20pt; width: calc(100% - 20pt); margin-top: 8pt;">
+      <thead>
+        <tr>
+          <th>Detalle de Ingreso</th>
+          <th style="width: 80px;">Notas</th>
+          <th style="width: 140px; text-align: right;">Bolívares</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ingresos.map((r, i) => `<tr>
+          <td>${r.concepto || ''}</td>
+          <td style="text-align: center;">${i + 1}</td>
+          <td class="td-right">Bs. ${fmtBs(r.monto)}</td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot>
+        <tr class="td-total">
+          <td colspan="2" style="font-weight: bold;">TOTAL DE INGRESOS</td>
+          <td class="td-right" style="font-weight: bold;">Bs. ${totalIngresos}</td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 
   <div class="firma-bloque" style="margin-top: 30pt;">
@@ -743,7 +766,7 @@ function htmlBalancePersonal(datos, calculos) {
     <tfoot><tr class="subtotal-row"><td>TOTAL</td><td class="td-right">Bs. ${fmtBs(totalInversion)}</td></tr></tfoot>
   </table>` : ''}
 
-  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
+  <div style="margin-top: 60pt; text-align: center; page-break-inside: avoid;">
     <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
       <strong>${nombreCliente}</strong><br>
       C.I. N° ${cedula}
