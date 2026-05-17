@@ -106,7 +106,10 @@ const BASE_CSS = `
     background: #f5f5f5;
   }
   .firma-bloque {
-    margin-top: 60pt;
+    margin-top: 40pt;
+    page-break-inside: avoid;
+  }
+  .firma-seccion {
     page-break-inside: avoid;
   }
   .firma-linea {
@@ -243,6 +246,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     base de una forma negativa de expresión.
   </p>
 
+  <div class="firma-seccion">
   <p class="seccion-titulo">Conclusión</p>
   <p>
     Con base en el trabajo efectuado descrito en este informe, no ha llamado
@@ -263,6 +267,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
     <div>Contador Público Colegiado</div>
     <div>C.P.C. 90.419</div>
+  </div>
   </div>
 
 </div>
@@ -335,7 +340,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     lícito ejercicio.
   </div>
 
-  <div style="margin-top: 60pt; text-align: center; page-break-inside: avoid;">
+  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
     <div style="margin-bottom: 30pt;">
       <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
         <strong>${nombreCliente}</strong><br>
@@ -352,6 +357,7 @@ function htmlCertificacionIngresos(datos, calculos) {
       como: ${actividad}. Dirección: ${direccion}.
     </p>
 
+    <div class="firma-seccion">
     <div class="note-titulo">NOTA 2: CUADRO DEMOSTRATIVO</div>
     <p class="indent">
       Cuadro demostrativo correspondiente a la actividad económica de
@@ -381,12 +387,13 @@ function htmlCertificacionIngresos(datos, calculos) {
         </tr>
       </tfoot>
     </table>
-  </div>
 
-  <div class="firma-bloque" style="margin-top: 30pt;">
-    <div class="firma-linea"></div>
-    <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
-    <div>Contador Público Colegiado — C.P.C. 90.419</div>
+    <div class="firma-bloque" style="margin-top: 30pt;">
+      <div class="firma-linea"></div>
+      <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
+      <div>Contador Público Colegiado — C.P.C. 90.419</div>
+    </div>
+    </div>
   </div>
 
 </div>
@@ -541,6 +548,7 @@ function htmlBalancePersonal(datos, calculos) {
     información financiera se preparó de conformidad con los Principios de
     Contabilidad Generalmente Aceptados en Venezuela (VEN-NIF PYME).
   </p>
+  <div class="firma-seccion">
   <p>
     <strong>Limitación de Distribución de la información</strong><br>
     Este informe ha sido preparado exclusivamente para uso de
@@ -555,6 +563,7 @@ function htmlBalancePersonal(datos, calculos) {
     <div class="firma-nombre-pie">Lcda. Mariali Carrizales</div>
     <div>Contador Público Colegiado</div>
     <div>C.P.C. 90.419</div>
+  </div>
   </div>
 
 </div>
@@ -766,7 +775,7 @@ function htmlBalancePersonal(datos, calculos) {
     <tfoot><tr class="subtotal-row"><td>TOTAL</td><td class="td-right">Bs. ${fmtBs(totalInversion)}</td></tr></tfoot>
   </table>` : ''}
 
-  <div style="margin-top: 60pt; text-align: center; page-break-inside: avoid;">
+  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
     <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
       <strong>${nombreCliente}</strong><br>
       C.I. N° ${cedula}
