@@ -176,6 +176,101 @@ function BalanceResumen({ datos, calculos }: { datos: any; calculos: any }) {
   );
 }
 
+function PrestacionesResumen({ datos, calculos }: { datos: any; calculos: any }) {
+  const c = calculos?.conceptos;
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 text-sm">
+        <div><span className="label">Trabajador</span><p>{datos.nombreTrabajador}</p></div>
+        <div><span className="label">Cédula</span><p>{datos.cedula}</p></div>
+        <div><span className="label">Cargo</span><p>{datos.cargo || '—'}</p></div>
+        <div><span className="label">Empresa</span><p>{datos.nombreEmpresa}</p></div>
+        <div><span className="label">Fecha de ingreso</span><p>{datos.fechaIngreso && fmtDate(datos.fechaIngreso)}</p></div>
+        <div><span className="label">Fecha de egreso</span><p>{datos.fechaEgreso && fmtDate(datos.fechaEgreso)}</p></div>
+        <div><span className="label">Motivo de terminación</span>
+          <p>{datos.motivoTerminacion === 'despido_injustificado' ? 'Despido injustificado'
+            : datos.motivoTerminacion === 'despido_justificado' ? 'Despido justificado' : 'Renuncia voluntaria'}</p>
+        </div>
+      </div>
+
+      {calculos && (
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 text-sm">
+          <h3 className="font-semibold text-brand-900 mb-3">Resultados del cálculo</h3>
+
+          {/* Tiempo de servicio */}
+          <div className="text-slate-600 mb-3">
+            Tiempo de servicio: <span className="font-medium text-slate-800">
+              {calculos.tiempoServicio?.aniosCompletos} año{calculos.tiempoServicio?.aniosCompletos !== 1 ? 's' : ''}
+              {(calculos.tiempoServicio?.meses % 12) > 0 ? ` y ${calculos.tiempoServicio.meses % 12} mes${(calculos.tiempoServicio.meses % 12) !== 1 ? 'es' : ''}` : ''}
+            </span>
+          </div>
+
+          {/* Salarios */}
+          <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
+            <div className="flex justify-between"><span>Salario diario normal</span><span className="font-medium">Bs. {fmt(calculos.salarioBase?.salarioDiario)}</span></div>
+            <div className="flex justify-between"><span>Salario integral diario</span><span className="font-medium">Bs. {fmt(calculos.salarioBase?.salarioIntegralDiario)}</span></div>
+          </div>
+
+          {/* Doble calculo */}
+          {c?.antiguedad && (
+            <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
+              <h4 className="font-medium text-slate-700">Antigüedad (Art. 142 LOTTT)</h4>
+              {c.antiguedad.detalleDobleCalculo && <>
+                <div className="flex justify-between text-slate-500">
+                  <span>Garantía trimestral: {c.antiguedad.detalleDobleCalculo.garantia.dias} días</span>
+                  <span>Bs. {fmt(c.antiguedad.detalleDobleCalculo.garantia.monto)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Retroactivo: {c.antiguedad.detalleDobleCalculo.retroactivo.dias} días</span>
+                  <span>Bs. {fmt(c.antiguedad.detalleDobleCalculo.retroactivo.monto)}</span>
+                </div>
+              </>}
+              <div className="flex justify-between font-semibold">
+                <span>Se aplica: {c.antiguedad.metodoUsado === 'retroactivo' ? 'Retroactivo (literal c)' : 'Garantía trimestral (literales a,b)'} — {c.antiguedad.dias} días</span>
+                <span>Bs. {fmt(c.antiguedad.monto)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Otros conceptos */}
+          <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
+            {c?.indemnizacion?.aplica && (
+              <div className="flex justify-between">
+                <span>Indemnización Art. 92</span>
+                <span className="font-medium">Bs. {fmt(c.indemnizacion.monto)}</span>
+              </div>
+            )}
+            {c?.vacacionesFraccionadas && (
+              <div className="flex justify-between">
+                <span>Vacaciones fraccionadas ({fmt(c.vacacionesFraccionadas.dias)} días)</span>
+                <span className="font-medium">Bs. {fmt(c.vacacionesFraccionadas.monto)}</span>
+              </div>
+            )}
+            {c?.bonoVacacionalFraccionado && (
+              <div className="flex justify-between">
+                <span>Bono vacacional fraccionado ({fmt(c.bonoVacacionalFraccionado.dias)} días)</span>
+                <span className="font-medium">Bs. {fmt(c.bonoVacacionalFraccionado.monto)}</span>
+              </div>
+            )}
+            {c?.utilidadesFraccionadas && (
+              <div className="flex justify-between">
+                <span>Utilidades fraccionadas ({fmt(c.utilidadesFraccionadas.dias)} días)</span>
+                <span className="font-medium">Bs. {fmt(c.utilidadesFraccionadas.monto)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Total */}
+          <div className="flex justify-between text-lg font-bold text-brand-900">
+            <span>TOTAL A PAGAR</span>
+            <span>Bs. {fmt(calculos.totalAPagar)}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── página principal ─────────────────────────────────────────────────────────
 
 export default function TramiteDetailPage() {
@@ -221,6 +316,7 @@ export default function TramiteDetailPage() {
   const { datos, calculos, observaciones, estado, tipo, createdAt } = tramite;
   const isCert    = tipo === 'CERTIFICACION_INGRESOS';
   const isBalance = tipo === 'BALANCE_PERSONAL';
+  const isPrest   = tipo === 'PRESTACIONES_SOCIALES';
   const isApproved = estado === 'APROBADO';
 
   return (
@@ -266,7 +362,8 @@ export default function TramiteDetailPage() {
         <h2 className="font-semibold text-slate-900 mb-4">Datos del trámite</h2>
         {isCert    && <CertificacionResumen datos={datos} calculos={calculos} />}
         {isBalance && <BalanceResumen       datos={datos} calculos={calculos} />}
-        {!isCert && !isBalance && (
+        {isPrest   && <PrestacionesResumen  datos={datos} calculos={calculos} />}
+        {!isCert && !isBalance && !isPrest && (
           <pre className="text-xs text-slate-600 overflow-auto">
             {JSON.stringify(datos, null, 2)}
           </pre>
