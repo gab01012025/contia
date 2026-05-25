@@ -137,7 +137,7 @@ const BASE_CSS = `
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DOCUMENTO 1: CERTIFICACIÓN DE INGRESOS
-// Compuesto por: Informe + Anexo (Relación de Ingresos)
+// 3 páginas: Informe + Relación de Ingresos + Notas
 // ─────────────────────────────────────────────────────────────────────────────
 function htmlCertificacionIngresos(datos, calculos) {
   const {
@@ -149,121 +149,137 @@ function htmlCertificacionIngresos(datos, calculos) {
     periodoDesde,
     periodoHasta,
     ciudad             = '_______________',
+    genero             = 'masculino',
+    tipoActividad      = 'profesion_liberal',
+    soportes           = [],
     ingresos           = [],
     egresos            = [],
   } = datos;
 
+  // Helpers de formateo
+  const titulo = genero === 'femenino' ? 'Sra.' : 'Sr.';
+  const nombreUpper = nombreCliente.toUpperCase();
+  const actividadUpper = actividad.toUpperCase();
   const periodoStr = `${fmtFecha(periodoDesde)} al ${fmtFecha(periodoHasta)}`;
+  const periodoStrUpper = `DEL ${fmtFecha(periodoDesde).toUpperCase()} AL ${fmtFecha(periodoHasta).toUpperCase()}`;
   const totalIngresos = fmtBs(calculos?.totalIngresos ?? 0);
 
-  const filasIngresos = ingresos.map(r => `
+  // Texto de detalle según tipo de actividad
+  const detalleActividad = tipoActividad === 'actividad_comercial'
+    ? `Ingresos percibidos por la actividad comercial de: <strong>${actividadUpper}</strong>`
+    : `Ingresos como: <strong>${actividadUpper}</strong>`;
+
+  // Soportes seleccionados para NOTA 3
+  const soportesTexto = soportes.length > 0
+    ? soportes.join(', ')
+    : '(Soporte selección por el cliente)';
+
+  // Filas de la relación de ingresos (tabla 3 columnas)
+  const filasRelacion = ingresos.map((r, i) => `
     <tr>
       <td>${r.concepto || ''}</td>
+      <td>${detalleActividad}</td>
       <td class="td-right">Bs. ${fmtBs(r.monto)}</td>
     </tr>
   `).join('');
 
-  const filasEgresos = egresos.length > 0 ? egresos.map(r => `
-    <tr>
-      <td>${r.concepto || ''}</td>
-      <td class="td-right">Bs. ${fmtBs(r.monto)}</td>
-    </tr>
-  `).join('') : '';
+  // CSS específico para certificación (cursiva global)
+  const CERT_CSS = `
+    body { font-style: italic; }
+    .no-italic { font-style: normal; }
+  `;
 
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Certificación de Ingresos — ${nombreCliente}</title>
-  <style>${BASE_CSS}</style>
+  <style>${BASE_CSS}${CERT_CSS}</style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- PÁGINA 1: INFORME DE ENCARGO DE ASEGURAMIENTO             -->
+<!-- PÁGINA 1: INFORME DE ENCARGOS DE ASEGURAMIENTO             -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div class="page">
 
   <div class="header-logo">
     <img class="logo-cpc" src="${LOGO_CPC_URI}" alt="Colegio de Contadores Públicos de Venezuela">
     <div class="firma-nombre">Lcda. Mariali C. Carrizales P.</div>
-    <div class="firma-titulo">Contador Público Colegiado</div>
-    <div class="firma-cpc">C.P.C. 90.419</div>
+    <div class="firma-titulo">Contador Público Colegiado 90.419</div>
+    <div class="firma-cpc">R.I.F. V-</div>
   </div>
 
-  <hr>
-
-  <h1 class="titulo-doc">
+  <h1 class="titulo-doc" style="text-decoration: underline;">
     Informe de Encargos de Aseguramiento sobre la<br>
-    Relación de Ingresos de ${nombreCliente}
+    Relación de Ingresos de ${nombreUpper}
   </h1>
 
   <div class="destinatario">
     <span class="label">Señores:</span><br>
-    ${nombreInstitucion}
+    <strong>${nombreInstitucion}</strong>
   </div>
 
   <p class="seccion-titulo">Alcance</p>
   <p>
-    He revisado la evidencia inherente a los ingresos percibidos por
-    ${nombreCliente}, titular de la Cédula de Identidad N° ${cedula},
-    detallado en la relación adjunta, para el período del ${periodoStr};
-    correspondiente a su actividad como: ${actividad}.
+    He revisado la evidencia inherente a los ingresos percibidos por el ${titulo}
+    <strong>${nombreUpper}</strong>, titular de la Cédula de Identidad N
+    <strong>${cedula}</strong>, detallado en la relación adjunta, para el período del
+    ${periodoStr}; correspondiente a su actividad como: <strong>${actividadUpper}</strong>.
   </p>
 
   <p class="seccion-titulo">Responsabilidad del cliente</p>
   <p>
-    ${nombreCliente} es responsable de la preparación y presentación del
-    importe de sus ingresos que se adjunta a este informe, incluyendo la
-    integridad, legalidad y veracidad de los documentos suministrados.
-    Esta responsabilidad incluye la aseveración de que todos y cada uno de
-    los ingresos detallados en la relación, provienen de actividades
-    legítimas y de comprobable lícito ejercicio.
+    El ${titulo} <strong>${nombreUpper}</strong>, es responsable de la preparación y
+    presentación del importe de sus ingresos que se adjunta a este informe, incluyendo
+    la integridad, legalidad y veracidad de los documentos suministrados. Esta
+    responsabilidad incluye la aseveración de que todos y cada uno de los ingresos
+    detallados en la relación, provienen de actividades legítimas y de comprobable
+    lícito ejercicio.
   </p>
 
   <p class="seccion-titulo">Responsabilidad del Auditor Independiente</p>
   <p>
-    Mi responsabilidad es expresar una seguridad limitada sobre la relación
-    de ingresos obtenida por ${nombreCliente}, durante el período señalado
-    de acuerdo con mis procedimientos, los cuales he realizado de conformidad
-    con la Norma Internacional de Encargos de Aseguramiento (NIEA 3000),
-    distintos de la auditoría o de la revisión de información financiera
-    histórica. Esta norma prevé que cumpla con los requerimientos éticos, y
-    que planifique y realice mis procedimientos para obtener una seguridad
-    limitada de que, en todos los aspectos materiales, la relación está
-    presentada razonablemente.
+    Mi responsabilidad es expresar una seguridad limitada sobre la relación de ingresos
+    obtenida por el ${titulo} <strong>${nombreUpper}</strong>, durante el período señalado
+    de acuerdo con mis procedimientos, los cuales he realizado de conformidad con la
+    <strong>Norma Internacional de Encargos de Aseguramiento (NIEA 3000)</strong>,
+    distintos de la auditoría o de la revisión de información financiera histórica. Esta
+    norma prevé que cumpla con los requerimientos éticos, y que planifique y realice mis
+    procedimientos para obtener una seguridad limitada de que, en todos los aspectos
+    materiales, la relación está presentada razonablemente.
   </p>
   <p>
-    Un encargo de aseguramiento implica llevar a cabo procedimientos para
-    obtener evidencia acerca de la razonabilidad de las aseveraciones emitidas
-    por el responsable. Los procedimientos para compilar evidencia son más
-    limitados que para un encargo de asegurar con seguridad razonable; por lo
-    tanto, se obtiene menos certeza que en un encargo de asegurar con seguridad
-    razonable, los cuales dependen del juicio profesional del contador público,
-    que incluye evaluar los riesgos acerca de que los ingresos no estén
-    presentados razonablemente. El objetivo es obtener una seguridad limitada
-    para que el contador público obtenga un nivel moderado de seguridad como
-    base de una forma negativa de expresión.
+    <strong>Un encargo de aseguramiento</strong> implica llevar a cabo procedimientos para
+    obtener evidencia acerca de la razonabilidad de las aseveraciones emitidas por el
+    responsable. Los procedimientos para compilar evidencia son más limitados que para un
+    encargo de asegurar con seguridad razonable; por lo tanto, se obtiene menos certeza
+    que en un encargo de asegurar con seguridad razonable, los cuales dependen del juicio
+    profesional del contador público, que incluye evaluar los riesgos acerca de que los
+    ingresos no estén presentados razonablemente. El objetivo es obtener una seguridad
+    limitada para que el contador público obtenga un nivel moderado de seguridad como base
+    de una forma negativa de expresión. Por lo tanto, mi responsabilidad no es expresar una
+    opinión sobre los ingresos del ${titulo} <strong>${nombreUpper}</strong>, para el
+    periodo del ${periodoStr}, con base al examen sobre la evidencia obtenida.
   </p>
 
   <div class="firma-seccion">
   <p class="seccion-titulo">Conclusión</p>
   <p>
-    Con base en el trabajo efectuado descrito en este informe, no ha llamado
-    mi atención algo que me haga pensar que la relación de ingresos que se
-    anexa, en todos los aspectos importantes, no sea razonable y que los
-    ingresos detallados en la relación, no provengan de actividades legítimas
-    y de comprobable lícito ejercicio.
+    Con base en el trabajo efectuado descrito en este informe, no ha llamado mi atención
+    algo que me haga pensar que la relación de ingresos que se anexa, en todos los aspectos
+    importantes, no sea razonable y que los ingresos detallados en la relación, no provengan
+    de actividades legítimas y de comprobable lícito ejercicio.
   </p>
   <p>
-    Este informe está dirigido únicamente para la actualización de datos para
-    ${nombreInstitucion}.
+    Este informe está dirigido únicamente para la actualización de datos para el
+    <strong>${nombreInstitucion.toUpperCase()}</strong>
   </p>
 
-  <p class="ciudad-fecha">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
+  <p class="ciudad-fecha" style="text-align: right;">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
 
-  <div class="firma-bloque">
-    <div class="firma-linea"></div>
+  <div class="firma-bloque" style="text-align: center;">
+    <div class="firma-linea" style="margin: 0 auto;"></div>
     <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
     <div>Contador Público Colegiado</div>
     <div>C.P.C. 90.419</div>
@@ -273,67 +289,42 @@ function htmlCertificacionIngresos(datos, calculos) {
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- PÁGINA 2: ANEXO — RELACIÓN DE INGRESOS                     -->
+<!-- PÁGINA 2: RELACIÓN DE INGRESOS                              -->
 <!-- ═══════════════════════════════════════════════════════════ -->
-<div class="page page-break" style="page-break-before: always;">
+<div class="page" style="page-break-before: always;">
 
   <div style="text-align: center; margin-bottom: 20pt;">
-    <div style="font-weight: bold; font-size: 12pt;">${nombreCliente}</div>
-    <div>${cedula}</div>
+    <div style="font-weight: bold; font-size: 12pt;">${nombreUpper}</div>
+    <div>V- ${cedula.replace(/^V-?\s*/i, '')}</div>
   </div>
 
   <h1 class="titulo-doc">
     Relación de Ingresos<br>
-    <span style="font-size: 10pt; font-weight: normal;">
-      Del ${fmtFecha(periodoDesde)} al ${fmtFecha(periodoHasta)}
+    <span style="font-size: 10pt; font-weight: normal; text-transform: uppercase;">
+      ${periodoStrUpper}
     </span>
   </h1>
 
   <table>
     <thead>
       <tr>
-        <th>Concepto / Descripción</th>
-        <th style="width: 180px; text-align: right;">Monto</th>
+        <th>Período (mes)</th>
+        <th>Detalle de la actividad</th>
+        <th style="width: 160px; text-align: right;">Monto percibido en (Bs.)</th>
       </tr>
     </thead>
     <tbody>
-      ${filasIngresos}
+      ${filasRelacion}
     </tbody>
     <tfoot>
       <tr>
-        <td class="td-total">TOTAL INGRESOS</td>
+        <td class="td-total" colspan="2">TOTAL INGRESOS</td>
         <td class="td-total td-right">Bs. ${totalIngresos}</td>
       </tr>
     </tfoot>
   </table>
 
-  ${egresos.length > 0 ? `
-  <table style="margin-top: 16pt;">
-    <thead>
-      <tr>
-        <th>Egresos / Gastos</th>
-        <th style="width: 180px; text-align: right;">Monto</th>
-      </tr>
-    </thead>
-    <tbody>${filasEgresos}</tbody>
-    <tfoot>
-      <tr>
-        <td class="td-total">TOTAL EGRESOS</td>
-        <td class="td-total td-right">Bs. ${fmtBs(calculos?.totalEgresos ?? 0)}</td>
-      </tr>
-    </tfoot>
-  </table>
-  <table style="margin-top: 8pt;">
-    <tfoot>
-      <tr>
-        <td class="td-total">FLUJO NETO</td>
-        <td class="td-total td-right">Bs. ${fmtBs(calculos?.flujoMensual ?? 0)}</td>
-      </tr>
-    </tfoot>
-  </table>
-  ` : ''}
-
-  <div style="margin-top: 30pt; font-style: italic; text-align: justify; font-size: 10pt;">
+  <div style="margin-top: 30pt; text-align: justify; font-size: 10pt;">
     <strong>Legitimación de Capitales:</strong> Todos y cada uno de los ingresos
     detallados en la relación que le he facilitado para su revisión, por monto en
     Bs. ${totalIngresos}, provienen de actividades legítimas y de comprobable
@@ -341,59 +332,82 @@ function htmlCertificacionIngresos(datos, calculos) {
   </div>
 
   <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
-    <div style="margin-bottom: 30pt;">
-      <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
-        <strong>${nombreCliente}</strong><br>
-        ${cedula}
-      </div>
+    <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
+      <strong>${nombreUpper}</strong><br>
+      V- ${cedula.replace(/^V-?\s*/i, '')}
     </div>
   </div>
 
-  <div style="margin-top: 20pt; font-size: 10pt;">
-    <div class="note-titulo">NOTA 1: IDENTIFICACIÓN</div>
-    <p class="indent">
-      Detalle de los ingresos percibidos de ${nombreCliente}, identificado/a con
-      la cédula de identidad N° ${cedula}, correspondiente a su actividad económica
-      como: ${actividad}. Dirección: ${direccion}.
-    </p>
+</div>
 
-    <div class="firma-seccion">
-    <div class="note-titulo">NOTA 2: CUADRO DEMOSTRATIVO</div>
-    <p class="indent">
-      Cuadro demostrativo correspondiente a la actividad económica de
-      ${nombreCliente}, identificado/a con la cédula de identidad N° ${cedula},
-      actividad: ${actividad}.
-      Período: ${periodoStr}.
-    </p>
-    <table class="indent" style="margin-left: 20pt; width: calc(100% - 20pt); margin-top: 8pt;">
-      <thead>
-        <tr>
-          <th>Detalle de Ingreso</th>
-          <th style="width: 80px;">Notas</th>
-          <th style="width: 140px; text-align: right;">Bolívares</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${ingresos.map((r, i) => `<tr>
-          <td>${r.concepto || ''}</td>
-          <td style="text-align: center;">${i + 1}</td>
-          <td class="td-right">Bs. ${fmtBs(r.monto)}</td>
-        </tr>`).join('')}
-      </tbody>
-      <tfoot>
-        <tr class="td-total">
-          <td colspan="2" style="font-weight: bold;">TOTAL DE INGRESOS</td>
-          <td class="td-right" style="font-weight: bold;">Bs. ${totalIngresos}</td>
-        </tr>
-      </tfoot>
-    </table>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PÁGINA 3: NOTAS AL INFORME DE ASEGURAMIENTO                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="page" style="page-break-before: always;">
 
-    <div class="firma-bloque" style="margin-top: 30pt;">
-      <div class="firma-linea"></div>
-      <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
-      <div>Contador Público Colegiado — C.P.C. 90.419</div>
-    </div>
-    </div>
+  <h1 class="titulo-doc" style="text-decoration: underline; margin-bottom: 8pt;">
+    Notas al Informe de Aseguramiento sobre la Relación de Ingresos<br>
+    ${nombreUpper}<br>
+    <span style="font-weight: normal;">V-${cedula.replace(/^V-?\s*/i, '')}</span>
+  </h1>
+
+  <div class="note-titulo">NOTA 1: IDENTIFICACIÓN</div>
+  <p class="indent">
+    Detalle de los ingresos percibidos del ${titulo} <strong>${nombreUpper}</strong>,
+    identificado/a con la cédula de identidad N <strong>V- ${cedula.replace(/^V-?\s*/i, '')}</strong>,
+    correspondiente a su actividad económica como: <strong>${actividadUpper}</strong>.
+    Dirección: ${direccion}.
+  </p>
+
+  <div class="note-titulo">NOTA 2: BASE DE MEDICIÓN, PREPARACIÓN Y PRESENTACIÓN</div>
+  <p class="indent">
+    Las bases de medición para los ingresos detallados en la relación son el valor razonable
+    de la contraprestación recibida o por recibir (principio del devengo). Para la preparación
+    y presentación se tomaron en cuenta los criterios de reconocimiento y medición descritos en
+    los <strong>Principios de Contabilidad Generalmente Aceptados en Venezuela (VEN NIF)</strong>.
+  </p>
+
+  <div class="firma-seccion">
+  <div class="note-titulo">NOTA 3: DETALLES DE LOS INGRESOS</div>
+  <p class="indent">
+    Cuadro demostrativo correspondiente a la actividad económica de
+    <strong>${nombreUpper}</strong>, identificado/a con la cédula de identidad N
+    <strong>V- ${cedula.replace(/^V-?\s*/i, '')}</strong>, actividad:
+    <strong>${actividadUpper}</strong>. Período: ${periodoStr}.
+  </p>
+
+  <table class="indent" style="margin-left: 20pt; width: calc(100% - 20pt); margin-top: 8pt;">
+    <thead>
+      <tr>
+        <th>Detalle de Ingreso</th>
+        <th style="width: 80px;">Notas</th>
+        <th style="width: 140px; text-align: right;">Bolívares</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${ingresos.map((r, i) => `<tr>
+        <td>${actividadUpper}</td>
+        <td style="text-align: center;"></td>
+        <td class="td-right">Bs. ${fmtBs(r.monto)}</td>
+      </tr>`).join('')}
+    </tbody>
+    <tfoot>
+      <tr class="td-total">
+        <td colspan="2" style="font-weight: bold;">TOTAL DE INGRESOS</td>
+        <td class="td-right" style="font-weight: bold;">Bs. ${totalIngresos}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p class="indent" style="margin-top: 14pt;">
+    Los ingresos anteriores fueron validados por la revisión de: <strong>${soportesTexto}</strong>
+  </p>
+
+  <div class="firma-bloque" style="text-align: center; margin-top: 30pt;">
+    <div class="firma-linea" style="margin: 0 auto;"></div>
+    <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
+    <div>Contador Público Colegiado 90.419</div>
+  </div>
   </div>
 
 </div>

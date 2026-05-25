@@ -10,6 +10,17 @@ interface EgresoRow  { concepto: string; monto: string; }
 const emptyIngreso = (): IngresoRow => ({ concepto: '', monto: '' });
 const emptyEgreso  = (): EgresoRow  => ({ concepto: '', monto: '' });
 
+const SOPORTES_PROFESION = [
+  'Facturas de servicios',
+  'Recibos de honorarios profesionales',
+  'Estados de cuenta bancarios',
+];
+const SOPORTES_COMERCIAL = [
+  'Relación mensual de ventas',
+  'Facturas de proveedores',
+  'Estados de cuenta bancarios',
+];
+
 function sum(rows: { monto: string }[]) {
   return rows.reduce((acc, r) => acc + (parseFloat(r.monto) || 0), 0);
 }
@@ -26,7 +37,9 @@ export default function CertificacionIngresosPage() {
   const [form, setForm] = useState({
     nombreCliente:      '',
     cedula:             '',
+    genero:             'masculino',
     actividad:          '',
+    tipoActividad:      'profesion_liberal',
     direccion:          '',
     nombreInstitucion:  '',
     periodoDesde:       '',
@@ -34,11 +47,16 @@ export default function CertificacionIngresosPage() {
     ciudad:             '',
   });
 
+  const [soportes, setSoportes] = useState<string[]>([]);
   const [ingresos, setIngresos] = useState<IngresoRow[]>([emptyIngreso()]);
   const [egresos,  setEgresos]  = useState<EgresoRow[]>([]);
 
   function setField(key: keyof typeof form, val: string) {
     setForm(f => ({ ...f, [key]: val }));
+  }
+
+  function toggleSoporte(s: string) {
+    setSoportes(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   }
 
   function updateRow<T extends { concepto: string; monto: string }>(
@@ -56,6 +74,9 @@ export default function CertificacionIngresosPage() {
     setArr(arr.filter((_, idx) => idx !== i));
   }
 
+  const soportesOptions = form.tipoActividad === 'actividad_comercial'
+    ? SOPORTES_COMERCIAL : SOPORTES_PROFESION;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -71,7 +92,11 @@ export default function CertificacionIngresosPage() {
       }
     }
     if (ingresos.length === 0 || ingresos.some(r => !r.concepto || !r.monto)) {
-      setError('Agrega al menos un ingreso con concepto y monto.');
+      setError('Agrega al menos un ingreso con período y monto.');
+      return;
+    }
+    if (soportes.length === 0) {
+      setError('Selecciona al menos un tipo de soporte documental.');
       return;
     }
 
@@ -79,6 +104,7 @@ export default function CertificacionIngresosPage() {
     try {
       const datos = {
         ...form,
+        soportes,
         ingresos: ingresos.map(r => ({ concepto: r.concepto, monto: parseFloat(r.monto) || 0 })),
         egresos:  egresos.map(r  => ({ concepto: r.concepto,  monto: parseFloat(r.monto)  || 0 })),
       };
@@ -120,7 +146,7 @@ export default function CertificacionIngresosPage() {
               <label className="label">Nombre completo *</label>
               <input className="input" value={form.nombreCliente}
                 onChange={e => setField('nombreCliente', e.target.value)}
-                placeholder="Nombre Apellido" />
+                placeholder="Nombre y Apellido" />
             </div>
             <div>
               <label className="label">Cédula de identidad *</label>
@@ -128,11 +154,29 @@ export default function CertificacionIngresosPage() {
                 onChange={e => setField('cedula', e.target.value)}
                 placeholder="V-XX.XXX.XXX" />
             </div>
+            <div>
+              <label className="label">Género *</label>
+              <select className="input" value={form.genero}
+                onChange={e => setField('genero', e.target.value)}>
+                <option value="masculino">Masculino (Sr.)</option>
+                <option value="femenino">Femenino (Sra.)</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Tipo de actividad *</label>
+              <select className="input" value={form.tipoActividad}
+                onChange={e => { setField('tipoActividad', e.target.value); setSoportes([]); }}>
+                <option value="profesion_liberal">Profesión liberal / Prestación de servicios</option>
+                <option value="actividad_comercial">Actividad comercial independiente</option>
+              </select>
+            </div>
             <div className="sm:col-span-2">
-              <label className="label">Actividad económica *</label>
+              <label className="label">Actividad económica (sea específico) *</label>
               <input className="input" value={form.actividad}
                 onChange={e => setField('actividad', e.target.value)}
-                placeholder="Ej: Médico independiente, Comerciante, etc." />
+                placeholder={form.tipoActividad === 'profesion_liberal'
+                  ? 'Ej: Asesoría jurídica independiente, Médico cirujano, Ingeniero civil'
+                  : 'Ej: Comerciante de víveres, Compra y venta de ropa, Servicios de peluquería'} />
             </div>
             <div className="sm:col-span-2">
               <label className="label">Dirección *</label>
@@ -167,7 +211,7 @@ export default function CertificacionIngresosPage() {
               <label className="label">Ciudad *</label>
               <input className="input" value={form.ciudad}
                 onChange={e => setField('ciudad', e.target.value)}
-                placeholder="Ej: Caracas" />
+                placeholder="Ej: Maturín" />
             </div>
           </div>
         </section>
@@ -188,7 +232,7 @@ export default function CertificacionIngresosPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="text-left p-2 font-medium text-slate-600">Concepto / Descripción</th>
+                  <th className="text-left p-2 font-medium text-slate-600">Período (mes)</th>
                   <th className="text-right p-2 font-medium text-slate-600 w-40">Monto (Bs.)</th>
                   <th className="w-10"></th>
                 </tr>
@@ -201,7 +245,7 @@ export default function CertificacionIngresosPage() {
                         className="input text-sm"
                         value={row.concepto}
                         onChange={e => updateRow(ingresos, setIngresos, i, 'concepto', e.target.value)}
-                        placeholder="Ej: Honorarios profesionales enero"
+                        placeholder="Ej: Mes 1: Abril"
                       />
                     </td>
                     <td className="p-1">
@@ -235,6 +279,27 @@ export default function CertificacionIngresosPage() {
                 </tr>
               </tfoot>
             </table>
+          </div>
+        </section>
+
+        {/* Soportes documentales */}
+        <section className="card">
+          <h2 className="font-semibold text-slate-900 mb-2">Soportes documentales *</h2>
+          <p className="text-xs text-slate-500 mb-4">
+            Selecciona los documentos que respaldan los ingresos declarados.
+          </p>
+          <div className="space-y-2">
+            {soportesOptions.map(s => (
+              <label key={s} className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={soportes.includes(s)}
+                  onChange={() => toggleSoporte(s)}
+                  className="rounded border-slate-300"
+                />
+                <span>{s}</span>
+              </label>
+            ))}
           </div>
         </section>
 
@@ -345,7 +410,7 @@ export default function CertificacionIngresosPage() {
         <div className="flex gap-3 justify-end">
           <Link href="/dashboard/nuevo" className="btn-secondary">Cancelar</Link>
           <button type="submit" disabled={saving} className="btn-primary">
-            {saving ? 'Enviando…' : 'Enviar trámite'}
+            {saving ? 'Enviando...' : 'Enviar trámite'}
           </button>
         </div>
       </form>
