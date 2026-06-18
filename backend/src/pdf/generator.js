@@ -26,7 +26,7 @@ async function htmlToPdfBuffer(html) {
     await page.setContent(html, { waitUntil: 'load', timeout: 30000 });
     const pdf = await page.pdf({
       format: 'A4',
-      margin: { top: '12mm', bottom: '15mm', left: '15mm', right: '15mm' },
+      margin: { top: '5mm', bottom: '5mm', left: '8mm', right: '8mm' },
       printBackground: true,
       timeout: 30000,
     });

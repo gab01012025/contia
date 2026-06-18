@@ -31,24 +31,24 @@ const BASE_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: "Times New Roman", Times, serif;
-    font-size: 11pt;
-    line-height: 1.6;
+    font-size: 10pt;
+    line-height: 1.25;
     color: #000;
     background: #fff;
   }
   .page {
-    padding: 10mm 20mm 15mm 25mm;
+    padding: 3mm 8mm 3mm 10mm;
     max-width: 210mm;
     margin: 0 auto;
   }
   .header-logo {
     text-align: center;
-    margin-bottom: 18pt;
+    margin-bottom: 8pt;
   }
   .header-logo img.logo-cpc {
-    width: 60px;
+    width: 45px;
     height: auto;
-    margin-bottom: 6pt;
+    margin-bottom: 3pt;
   }
   .header-logo .firma-nombre {
     font-size: 13pt;
@@ -63,25 +63,25 @@ const BASE_CSS = `
   .header-logo .firma-cpc {
     font-size: 10pt;
   }
-  hr { border: none; border-top: 1.5px solid #000; margin: 12pt 0; }
+  hr { border: none; border-top: 1.5px solid #000; margin: 6pt 0; }
   h1.titulo-doc {
     font-size: 12pt;
     font-weight: bold;
     text-align: center;
     text-transform: uppercase;
-    margin-bottom: 16pt;
+    margin-bottom: 5pt;
     letter-spacing: 0.3px;
   }
-  p { margin-bottom: 10pt; text-align: justify; }
-  .destinatario { margin-bottom: 14pt; }
+  p { margin-bottom: 3pt; text-align: justify; }
+  .destinatario { margin-bottom: 4pt; }
   .destinatario .label { font-weight: bold; }
   .seccion-titulo {
     font-weight: bold;
     text-decoration: underline;
-    margin-bottom: 6pt;
-    margin-top: 12pt;
+    margin-bottom: 2pt;
+    margin-top: 4pt;
     text-transform: uppercase;
-    font-size: 10.5pt;
+    font-size: 10pt;
   }
   table {
     width: 100%;
@@ -106,7 +106,7 @@ const BASE_CSS = `
     background: #f5f5f5;
   }
   .firma-bloque {
-    margin-top: 40pt;
+    margin-top: 10pt;
     page-break-inside: avoid;
   }
   .firma-seccion {
@@ -123,7 +123,7 @@ const BASE_CSS = `
     font-size: 11pt;
   }
   .ciudad-fecha {
-    margin-top: 14pt;
+    margin-top: 4pt;
     font-weight: bold;
   }
   .page-break { page-break-after: always; }
@@ -276,9 +276,9 @@ function htmlCertificacionIngresos(datos, calculos) {
     <strong>${nombreInstitucion.toUpperCase()}</strong>
   </p>
 
-  <p class="ciudad-fecha" style="text-align: right;">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
+  <p class="ciudad-fecha" style="text-align: right; margin-top: 40pt;">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
 
-  <div class="firma-bloque" style="text-align: center;">
+  <div class="firma-bloque" style="text-align: center; margin-top: 30pt;">
     <div class="firma-linea" style="margin: 0 auto;"></div>
     <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
     <div>Contador Público Colegiado</div>
@@ -331,7 +331,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     lícito ejercicio.
   </div>
 
-  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
+  <div style="margin-top: 80pt; text-align: center; page-break-inside: avoid;">
     <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
       <strong>${nombreUpper}</strong><br>
       V- ${cedula.replace(/^V-?\s*/i, '')}
@@ -403,7 +403,7 @@ function htmlCertificacionIngresos(datos, calculos) {
     Los ingresos anteriores fueron validados por la revisión de: <strong>${soportesTexto}</strong>
   </p>
 
-  <div class="firma-bloque" style="text-align: center; margin-top: 30pt;">
+  <div class="firma-bloque" style="text-align: center; margin-top: 80pt;">
     <div class="firma-linea" style="margin: 0 auto;"></div>
     <div class="firma-nombre-pie">Lcda. Mariali C. Carrizales P.</div>
     <div>Contador Público Colegiado 90.419</div>

@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import PrestacionesResumen from '@/components/PrestacionesResumen';
+import IVAResumen from '@/components/IVAResumen';
+import { ArrowLeft, Download, Loader2, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 
 const TIPO_LABEL: Record<string, string> = {
   CERTIFICACION_INGRESOS: 'Certificación de ingresos',
@@ -55,33 +58,35 @@ function CertificacionResumen({ datos, calculos }: { datos: any; calculos: any }
       {datos.ingresos?.length > 0 && (
         <div>
           <h3 className="font-medium text-slate-800 mb-2">Relación de ingresos</h3>
-          <table className="w-full text-sm border border-slate-200 rounded-md overflow-hidden">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-3 font-medium text-slate-600">Concepto</th>
-                <th className="text-right p-3 font-medium text-slate-600">Monto (Bs.)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datos.ingresos.map((r: any, i: number) => (
-                <tr key={i} className="border-t border-slate-100">
-                  <td className="p-3">{r.concepto}</td>
-                  <td className="p-3 text-right">{fmt(r.monto)}</td>
+          <div className="rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="text-left p-3 font-medium text-slate-600">Concepto</th>
+                  <th className="text-right p-3 font-medium text-slate-600">Monto (Bs.)</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-slate-50">
-              <tr className="border-t border-slate-200">
-                <td className="p-3 font-semibold">TOTAL INGRESOS</td>
-                <td className="p-3 font-semibold text-right">Bs. {fmt(calculos?.totalIngresos ?? 0)}</td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {datos.ingresos.map((r: any, i: number) => (
+                  <tr key={i} className="border-t border-slate-100">
+                    <td className="p-3">{r.concepto}</td>
+                    <td className="p-3 text-right">{fmt(r.monto)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-slate-50">
+                <tr className="border-t border-slate-200">
+                  <td className="p-3 font-semibold">TOTAL INGRESOS</td>
+                  <td className="p-3 font-semibold text-right">Bs. {fmt(calculos?.totalIngresos ?? 0)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       )}
 
       {calculos && (
-        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 text-sm">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 text-sm">
           <h3 className="font-semibold text-brand-900 mb-2">Cálculos</h3>
           <div className="space-y-1">
             <div className="flex justify-between"><span>Total ingresos</span><span className="font-medium">Bs. {fmt(calculos.totalIngresos)}</span></div>
@@ -110,10 +115,9 @@ function BalanceResumen({ datos, calculos }: { datos: any; calculos: any }) {
       </div>
 
       {calculos && (
-        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 text-sm">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 text-sm">
           <h3 className="font-semibold text-brand-900 mb-3">Estado de situación financiera</h3>
           <div className="space-y-1">
-            <div className="flex justify-between text-slate-600"><span>Activos corrientes</span><span>Bs. {fmt((calculos.totalActivos || 0) - (calculos.totalActivos || 0))}</span></div>
             <div className="flex justify-between font-semibold border-t border-brand-200 pt-1"><span>TOTAL ACTIVOS</span><span>Bs. {fmt(calculos.totalActivos)}</span></div>
             <div className="flex justify-between text-slate-600 pt-2"><span>Total pasivos</span><span>Bs. {fmt(calculos.totalPasivos)}</span></div>
             <div className={`flex justify-between font-bold text-base border-t border-brand-300 pt-2 ${calculos.patrimonioNeto >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
@@ -124,146 +128,54 @@ function BalanceResumen({ datos, calculos }: { datos: any; calculos: any }) {
         </div>
       )}
 
-      {/* Detalle de activos */}
       {datos.cajaYBancos?.length > 0 && (
         <div>
           <h3 className="font-medium text-slate-800 mb-2 text-sm">Caja y bancos</h3>
-          <table className="w-full text-sm border border-slate-200 rounded-md overflow-hidden">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-2 font-medium text-slate-600">Banco</th>
-                <th className="text-left p-2 font-medium text-slate-600">N° cuenta</th>
-                <th className="text-right p-2 font-medium text-slate-600">Monto (Bs.)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datos.cajaYBancos.map((r: any, i: number) => (
-                <tr key={i} className="border-t border-slate-100">
-                  <td className="p-2">{r.banco}</td>
-                  <td className="p-2 text-slate-500">{r.numeroCuenta}</td>
-                  <td className="p-2 text-right">{fmt(r.monto)}</td>
+          <div className="rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="text-left p-2 font-medium text-slate-600">Banco</th>
+                  <th className="text-left p-2 font-medium text-slate-600">N° cuenta</th>
+                  <th className="text-right p-2 font-medium text-slate-600">Monto (Bs.)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {datos.cajaYBancos.map((r: any, i: number) => (
+                  <tr key={i} className="border-t border-slate-100">
+                    <td className="p-2">{r.banco}</td>
+                    <td className="p-2 text-slate-500">{r.numeroCuenta}</td>
+                    <td className="p-2 text-right">{fmt(r.monto)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {datos.inmuebles?.length > 0 && (
         <div>
           <h3 className="font-medium text-slate-800 mb-2 text-sm">Inmuebles</h3>
-          <table className="w-full text-sm border border-slate-200 rounded-md overflow-hidden">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-2 font-medium text-slate-600">Tipo</th>
-                <th className="text-left p-2 font-medium text-slate-600">Dirección</th>
-                <th className="text-right p-2 font-medium text-slate-600">Valor est. (Bs.)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datos.inmuebles.map((r: any, i: number) => (
-                <tr key={i} className="border-t border-slate-100">
-                  <td className="p-2">{r.tipo}</td>
-                  <td className="p-2 text-slate-500">{r.direccion}</td>
-                  <td className="p-2 text-right">{fmt(r.monto)}</td>
+          <div className="rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="text-left p-2 font-medium text-slate-600">Tipo</th>
+                  <th className="text-left p-2 font-medium text-slate-600">Dirección</th>
+                  <th className="text-right p-2 font-medium text-slate-600">Valor est. (Bs.)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PrestacionesResumen({ datos, calculos }: { datos: any; calculos: any }) {
-  const c = calculos?.conceptos;
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 text-sm">
-        <div><span className="label">Trabajador</span><p>{datos.nombreTrabajador}</p></div>
-        <div><span className="label">Cédula</span><p>{datos.cedula}</p></div>
-        <div><span className="label">Cargo</span><p>{datos.cargo || '—'}</p></div>
-        <div><span className="label">Empresa</span><p>{datos.nombreEmpresa}</p></div>
-        <div><span className="label">Fecha de ingreso</span><p>{datos.fechaIngreso && fmtDate(datos.fechaIngreso)}</p></div>
-        <div><span className="label">Fecha de egreso</span><p>{datos.fechaEgreso && fmtDate(datos.fechaEgreso)}</p></div>
-        <div><span className="label">Motivo de terminación</span>
-          <p>{datos.motivoTerminacion === 'despido_injustificado' ? 'Despido injustificado'
-            : datos.motivoTerminacion === 'despido_justificado' ? 'Despido justificado' : 'Renuncia voluntaria'}</p>
-        </div>
-      </div>
-
-      {calculos && (
-        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 text-sm">
-          <h3 className="font-semibold text-brand-900 mb-3">Resultados del cálculo</h3>
-
-          {/* Tiempo de servicio */}
-          <div className="text-slate-600 mb-3">
-            Tiempo de servicio: <span className="font-medium text-slate-800">
-              {calculos.tiempoServicio?.aniosCompletos} año{calculos.tiempoServicio?.aniosCompletos !== 1 ? 's' : ''}
-              {(calculos.tiempoServicio?.meses % 12) > 0 ? ` y ${calculos.tiempoServicio.meses % 12} mes${(calculos.tiempoServicio.meses % 12) !== 1 ? 'es' : ''}` : ''}
-            </span>
-          </div>
-
-          {/* Salarios */}
-          <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
-            <div className="flex justify-between"><span>Salario diario normal</span><span className="font-medium">Bs. {fmt(calculos.salarioBase?.salarioDiario)}</span></div>
-            <div className="flex justify-between"><span>Salario integral diario</span><span className="font-medium">Bs. {fmt(calculos.salarioBase?.salarioIntegralDiario)}</span></div>
-          </div>
-
-          {/* Doble calculo */}
-          {c?.antiguedad && (
-            <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
-              <h4 className="font-medium text-slate-700">Antigüedad (Art. 142 LOTTT)</h4>
-              {c.antiguedad.detalleDobleCalculo && <>
-                <div className="flex justify-between text-slate-500">
-                  <span>Garantía trimestral: {c.antiguedad.detalleDobleCalculo.garantia.dias} días</span>
-                  <span>Bs. {fmt(c.antiguedad.detalleDobleCalculo.garantia.monto)}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Retroactivo: {c.antiguedad.detalleDobleCalculo.retroactivo.dias} días</span>
-                  <span>Bs. {fmt(c.antiguedad.detalleDobleCalculo.retroactivo.monto)}</span>
-                </div>
-              </>}
-              <div className="flex justify-between font-semibold">
-                <span>Se aplica: {c.antiguedad.metodoUsado === 'retroactivo' ? 'Retroactivo (literal c)' : 'Garantía trimestral (literales a,b)'} — {c.antiguedad.dias} días</span>
-                <span>Bs. {fmt(c.antiguedad.monto)}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Otros conceptos */}
-          <div className="space-y-1 mb-3 pb-3 border-b border-brand-200">
-            {c?.indemnizacion?.aplica && (
-              <div className="flex justify-between">
-                <span>Indemnización Art. 92</span>
-                <span className="font-medium">Bs. {fmt(c.indemnizacion.monto)}</span>
-              </div>
-            )}
-            {c?.vacacionesFraccionadas && (
-              <div className="flex justify-between">
-                <span>Vacaciones fraccionadas ({fmt(c.vacacionesFraccionadas.dias)} días)</span>
-                <span className="font-medium">Bs. {fmt(c.vacacionesFraccionadas.monto)}</span>
-              </div>
-            )}
-            {c?.bonoVacacionalFraccionado && (
-              <div className="flex justify-between">
-                <span>Bono vacacional fraccionado ({fmt(c.bonoVacacionalFraccionado.dias)} días)</span>
-                <span className="font-medium">Bs. {fmt(c.bonoVacacionalFraccionado.monto)}</span>
-              </div>
-            )}
-            {c?.utilidadesFraccionadas && (
-              <div className="flex justify-between">
-                <span>Utilidades fraccionadas ({fmt(c.utilidadesFraccionadas.dias)} días)</span>
-                <span className="font-medium">Bs. {fmt(c.utilidadesFraccionadas.monto)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Total */}
-          <div className="flex justify-between text-lg font-bold text-brand-900">
-            <span>TOTAL A PAGAR</span>
-            <span>Bs. {fmt(calculos.totalAPagar)}</span>
+              </thead>
+              <tbody>
+                {datos.inmuebles.map((r: any, i: number) => (
+                  <tr key={i} className="border-t border-slate-100">
+                    <td className="p-2">{r.tipo}</td>
+                    <td className="p-2 text-slate-500">{r.direccion}</td>
+                    <td className="p-2 text-right">{fmt(r.monto)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -310,27 +222,33 @@ export default function TramiteDetailPage() {
     }
   }
 
-  if (loading) return <div className="p-10 text-center text-slate-500">Cargando…</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
+      </div>
+    );
   if (!tramite) return null;
 
   const { datos, calculos, observaciones, estado, tipo, createdAt } = tramite;
   const isCert    = tipo === 'CERTIFICACION_INGRESOS';
   const isBalance = tipo === 'BALANCE_PERSONAL';
   const isPrest   = tipo === 'PRESTACIONES_SOCIALES';
+  const isIVA     = tipo === 'IVA';
   const isApproved = estado === 'APROBADO';
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex items-center gap-2 mb-6 text-sm text-slate-500">
-        <Link href="/dashboard" className="hover:underline">Mis trámites</Link>
-        <span>/</span>
-        <span className="text-slate-800 font-medium">{TIPO_LABEL[tipo] || tipo}</span>
-      </div>
+    <div className="max-w-3xl mx-auto animate-fade-in">
+      {/* Breadcrumb */}
+      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-6">
+        <ArrowLeft className="h-4 w-4" />
+        Mis trámites
+      </Link>
 
-      {/* Encabezado */}
+      {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{TIPO_LABEL[tipo] || tipo}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{TIPO_LABEL[tipo] || tipo}</h1>
           <p className="text-slate-500 text-sm mt-1">Enviado el {fmtDate(createdAt)}</p>
         </div>
         <span className={ESTADO_BADGE[estado]}>{ESTADO_LABEL[estado]}</span>
@@ -338,22 +256,27 @@ export default function TramiteDetailPage() {
 
       {/* Observaciones si fue devuelto */}
       {estado === 'DEVUELTO' && observaciones?.length > 0 && (
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <h3 className="font-semibold text-amber-900 mb-2">Observaciones del contador</h3>
-          <ul className="space-y-2">
-            {observaciones.map((obs: any) => (
-              <li key={obs.id} className="text-sm text-amber-800">
-                <span className="font-medium">{obs.autor?.nombre}:</span> {obs.texto}
-                <span className="text-amber-600 text-xs ml-2">{fmtDate(obs.createdAt)}</span>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href={`/dashboard/nuevo/${tipo.toLowerCase()}`}
-            className="btn-primary mt-4 inline-block text-sm"
-          >
-            Corregir y reenviar
-          </Link>
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-900 mb-2">Observaciones del contador</h3>
+              <ul className="space-y-2">
+                {observaciones.map((obs: any) => (
+                  <li key={obs.id} className="text-sm text-amber-800">
+                    <span className="font-medium">{obs.autor?.nombre}:</span> {obs.texto}
+                    <span className="text-amber-600 text-xs ml-2">{fmtDate(obs.createdAt)}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/dashboard/nuevo/${tipo.toLowerCase()}`}
+                className="btn-primary mt-4 inline-flex text-sm"
+              >
+                Corregir y reenviar
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
@@ -363,8 +286,9 @@ export default function TramiteDetailPage() {
         {isCert    && <CertificacionResumen datos={datos} calculos={calculos} />}
         {isBalance && <BalanceResumen       datos={datos} calculos={calculos} />}
         {isPrest   && <PrestacionesResumen  datos={datos} calculos={calculos} />}
-        {!isCert && !isBalance && !isPrest && (
-          <pre className="text-xs text-slate-600 overflow-auto">
+        {isIVA     && <IVAResumen           datos={datos} calculos={calculos} />}
+        {!isCert && !isBalance && !isPrest && !isIVA && (
+          <pre className="text-xs text-slate-600 overflow-auto rounded-lg bg-slate-50 p-4">
             {JSON.stringify(datos, null, 2)}
           </pre>
         )}
@@ -373,19 +297,29 @@ export default function TramiteDetailPage() {
       {/* Descargar PDF — solo si aprobado */}
       {isApproved && (
         <div className="card bg-emerald-50 border-emerald-200">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center gap-4">
+            <div className="h-11 w-11 rounded-xl bg-emerald-100 text-emerald-600 grid place-items-center shrink-0 ring-1 ring-emerald-200">
+              <CheckCircle className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
               <h3 className="font-semibold text-emerald-900">Documento aprobado</h3>
-              <p className="text-sm text-emerald-700 mt-1">
-                El contador revisó y aprobó tu trámite. Descarga el documento oficial.
+              <p className="text-sm text-emerald-700 mt-0.5">
+                Revisado y aprobado. Descarga el documento oficial.
               </p>
             </div>
             <button
               onClick={downloadPdf}
               disabled={pdfLoading}
-              className="btn-primary bg-emerald-700 hover:bg-emerald-800"
+              className="btn bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shrink-0"
             >
-              {pdfLoading ? 'Generando…' : 'Descargar PDF'}
+              {pdfLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Descargar PDF
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -393,8 +327,13 @@ export default function TramiteDetailPage() {
 
       {/* Si está en revisión o pendiente */}
       {(estado === 'PENDIENTE' || estado === 'EN_REVISION') && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-          Tu trámite está siendo revisado por el contador. Recibirás un correo cuando esté listo.
+        <div className="card bg-blue-50 border-blue-200">
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-blue-600 shrink-0" />
+            <p className="text-sm text-blue-800">
+              Tu trámite está siendo revisado por el contador. Recibirás un correo cuando esté listo.
+            </p>
+          </div>
         </div>
       )}
     </div>
