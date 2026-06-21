@@ -488,12 +488,14 @@ function htmlBalancePersonal(datos, calculos) {
   <meta charset="UTF-8">
   <title>Balance Personal — ${nombreCliente}</title>
   <style>${BASE_CSS}
-    .balance-table td, .balance-table th { text-align: left; }
+    .balance-table { border: none; }
+    .balance-table td, .balance-table th { text-align: left; border: none; border-bottom: 1px solid #ccc; padding: 3pt 6pt; }
+    .balance-table td:first-child, .balance-table th:first-child { text-align: left; width: auto; }
     .balance-table td:last-child, .balance-table th:last-child { text-align: right; width: 160px; }
-    .subtotal-row td { font-weight: bold; border-top: 1.5px solid #555; }
+    .subtotal-row td { font-weight: bold; border-top: 1.5px solid #555; border-bottom: 1.5px solid #555; }
     .subtotal-row td:first-child { text-align: left; }
     .subtotal-row td:last-child { text-align: right; }
-    .total-row td { font-weight: bold; background: #f0f0f0; border-top: 2px solid #000; }
+    .total-row td { font-weight: bold; background: #f0f0f0; border-top: 2px solid #000; border-bottom: 2px solid #000; }
     .total-row td:first-child { text-align: left; }
     .total-row td:last-child { text-align: right; }
     td.section-header {
@@ -503,6 +505,7 @@ function htmlBalancePersonal(datos, calculos) {
       text-align: left !important;
       font-size: 10pt;
       letter-spacing: 0.3px;
+      border-bottom: 2px solid #999 !important;
     }
   </style>
 </head>
@@ -562,7 +565,7 @@ function htmlBalancePersonal(datos, calculos) {
     información financiera se preparó de conformidad con los Principios de
     Contabilidad Generalmente Aceptados en Venezuela (VEN-NIF PYME).
   </p>
-  <div class="firma-seccion">
+  <div class="firma-seccion" style="margin-top: 40pt;">
   <p>
     <strong>Limitación de Distribución de la información</strong><br>
     Este informe ha sido preparado exclusivamente para uso de
@@ -570,9 +573,9 @@ function htmlBalancePersonal(datos, calculos) {
     autorización previa.
   </p>
 
-  <p class="ciudad-fecha">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
+  <p class="ciudad-fecha" style="margin-top: 20pt;">${ciudad}, ${fmtFecha(new Date().toISOString())}</p>
 
-  <div class="firma-bloque">
+  <div class="firma-bloque" style="margin-top: 30pt;">
     <div class="firma-linea"></div>
     <div class="firma-nombre-pie">Lcda. Mariali Carrizales</div>
     <div>Contador Público Colegiado</div>
@@ -669,6 +672,14 @@ function htmlBalancePersonal(datos, calculos) {
       <td>Bs. ${fmtBs(totalPasivos + patrimonio)}</td>
     </tr>
   </table>
+
+  <!-- Firma del usuario dentro del estado financiero -->
+  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
+    <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
+      <strong>${nombreCliente}</strong><br>
+      C.I. N° ${cedula}
+    </div>
+  </div>
 
 </div>
 
@@ -789,12 +800,6 @@ function htmlBalancePersonal(datos, calculos) {
     <tfoot><tr class="subtotal-row"><td>TOTAL</td><td class="td-right">Bs. ${fmtBs(totalInversion)}</td></tr></tfoot>
   </table>` : ''}
 
-  <div style="margin-top: 40pt; text-align: center; page-break-inside: avoid;">
-    <div style="border-top: 1px solid #000; width: 55%; margin: 0 auto; padding-top: 4pt;">
-      <strong>${nombreCliente}</strong><br>
-      C.I. N° ${cedula}
-    </div>
-  </div>
 
 </div>
 
